@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Header, { CUSTOMER_PERSONAS } from './components/Header';
 import RevenueDashboard from './components/RevenueDashboard';
+import ArchitectureExplainer from './components/ArchitectureExplainer';
 import VoiceSimulator from './components/VoiceSimulator';
 import ChatInterface from './components/ChatInterface';
 import GovernanceDashboard from './components/GovernanceDashboard';
@@ -48,7 +49,7 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white flex flex-col font-sans selection:bg-emerald-600 selection:text-white">
+    <div className="min-h-screen bg-[#060b13] text-slate-100 flex flex-col font-sans selection:bg-[#00c988] selection:text-black">
       
       {/* Top Navigation & Metric Ticker Header */}
       <Header
@@ -69,7 +70,13 @@ export default function App() {
               const persona = CUSTOMER_PERSONAS.find(p => p.id === item.customer_id) || CUSTOMER_PERSONAS[0];
               setActiveCustomer(persona);
             }}
+            onNavigateToArchitecture={() => setActiveTab('architecture')}
           />
+        )}
+
+        {/* Architecture & Steps Deep-Dive Tab */}
+        {activeTab === 'architecture' && (
+          <ArchitectureExplainer />
         )}
 
         {/* Voice & WhatsApp Intervention Lab */}
@@ -109,13 +116,13 @@ export default function App() {
       </main>
 
       {/* Footer */}
-      <footer className="bg-slate-900/90 border-t border-slate-800 py-4 text-center text-xs text-slate-400 font-mono flex flex-wrap items-center justify-center gap-3">
-        <span className="w-2 h-2 rounded-full bg-emerald-400 inline-block animate-pulse"></span>
-        <span className="text-white font-bold">Track 03 • AI Revenue Recovery Platform</span>
+      <footer className="bg-[#080d19] border-t border-[#1b2a42] py-4 text-center text-xs text-slate-400 font-mono flex flex-wrap items-center justify-center gap-3">
+        <span className="w-2 h-2 rounded-full bg-[#00c988] inline-block animate-pulse"></span>
+        <span className="text-white font-bold">Razorpay Buildathon • Track 03 AI Revenue Recovery</span>
         <span>•</span>
-        <span>Bounded Autonomy • Stopping Rules • Measured ₹ Recovered</span>
+        <span>Bounded Autonomy • Stopping Rules • Measured ROI</span>
         <span>•</span>
-        <span className="text-slate-500">Powered by FastAPI &amp; React</span>
+        <span className="text-slate-500">FastAPI &amp; React</span>
       </footer>
 
     </div>

@@ -4,8 +4,22 @@
 
 @layer base {
   body {
-    @apply bg-slate-950 text-white min-h-screen overflow-x-hidden selection:bg-blue-600 selection:text-white;
+    @apply bg-razor-bg text-slate-100 min-h-screen overflow-x-hidden selection:bg-razor-accent selection:text-black;
   }
+}
+
+/* Custom Glassmorphic Cards & Glow Effects */
+.glass-panel {
+  background: rgba(14, 23, 38, 0.85);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(27, 42, 66, 0.9);
+}
+
+.glass-panel-glow {
+  background: rgba(14, 23, 38, 0.92);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(0, 201, 136, 0.25);
+  box-shadow: 0 0 30px -10px rgba(0, 201, 136, 0.15);
 }
 
 /* Custom Scrollbars */
@@ -14,14 +28,14 @@
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #0f172a;
+  background: #050911;
 }
 ::-webkit-scrollbar-thumb {
-  background: #1e3a5f;
+  background: #1b2a42;
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #10b981;
+  background: #00c988;
 }
 
 /* Utility to hide scrollbar for nav horizontal scrolling */
