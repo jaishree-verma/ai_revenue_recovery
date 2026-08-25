@@ -1,4 +1,4 @@
-# ⚡ AI Revenue Recovery Platform (Track 03)
+# AI Revenue Recovery Platform 
 > **Razorpay Buildathon Track 03: AI Revenue Recovery**  
 > *"Find revenue that's slipping away and win it back with bounded autonomous agents, stopping rules, and measured ROI."*
 
