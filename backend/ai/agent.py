@@ -24,6 +24,7 @@ from schemas import GovernanceRequest
 from ai.intent_router import IntentRouter
 from ai.diagnosis_agent import DiagnosisAgent
 from ai.recovery_agent import RecoveryDecisionAgent
+from ai.query_engine import QueryAnsweringEngine
 
 
 class AIServicingAgent:
@@ -35,6 +36,7 @@ class AIServicingAgent:
         self.router = IntentRouter()
         self.diagnosis_agent = DiagnosisAgent()
         self.decision_agent = RecoveryDecisionAgent()
+        self.query_engine = QueryAnsweringEngine()
 
     def process_message(
         self,
@@ -162,25 +164,14 @@ class AIServicingAgent:
                 ]
             }
 
-        # If general query with no recovery intent
-        if intent == "general_query":
-            return {
-                "message": (
-                    f"Hello {customer.name}! I am your **AI Revenue Recovery Agent**.\n\n"
-                    "I actively monitor revenue at risk across checkout drop-offs, failed subscriptions, "
-                    "overdue B2B invoices, and payment degradations.\n\n"
-                    "How can I assist you today?"
-                ),
-                "intent": "general_query",
-                "governance_decision": None,
-                "action_executed": False,
-                "suggested_prompts": [
-                    "My payment failed. I need help.",
-                    "Recover abandoned checkout with 5% impulse waiver",
-                    "Sequence mandate retry with updated card token",
-                    "Start Hinglish B2B overdue voice chaser & Promise-to-Pay plan"
-                ],
-            }
+        # If general query or fee reversal, resolve via the full QueryAnsweringEngine
+        if intent in ("general_query", "fee_reversal"):
+            return self.query_engine.answer_query(
+                customer_id=customer.id,
+                session_id=session_id,
+                message=message,
+                db=db
+            )
 
         # Step 2: Revenue Risk Scoring
         risk_score = 15

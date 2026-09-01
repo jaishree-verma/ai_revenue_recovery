@@ -10,7 +10,8 @@ Classifies customer & merchant recovery interactions into:
   4. mandate_sequencer (Subscription & Mandate Retry Sequencer)
   5. b2b_receivables_chaser (B2B Overdue Receivables & Promise-to-Pay)
   6. payment_degradation_fix (Payment Degradation & Gateway Fallback)
-  7. fee_reversal / general_query
+  7. fee_reversal (Fee waiver / reversal request)
+  8. general_query (All other queries, FAQs, account inquiries, metric checks)
 """
 
 import re
@@ -26,11 +27,18 @@ class IntentRouter:
         text = message.lower().strip()
         params = {}
 
+        # Questions asking for explanations/information should go to general_query / query engine
+        is_informational_question = any(q in text for q in [
+            "what is", "how do", "how does", "explain", "tell me about", "why is", "who are you",
+            "can you explain", "what are", "how much", "what's", "show me", "status of", "what do",
+            "meaning of", "details of"
+        ])
+
         # 1. Direct Payment Failure Help (Conversational Entry)
         if any(term in text for term in [
             "my payment failed", "payment failed. i need help", "payment failed",
             "failed payment", "need help with payment", "transaction failed", "payment was declined"
-        ]) and not any(term in text for term in ["reroute", "gateway switch", "b2b", "subscription"]):
+        ]) and not any(term in text for term in ["reroute", "gateway switch", "b2b", "subscription", "how does", "what is"]):
             return {
                 "intent": "payment_failed_help",
                 "confidence": 0.99,
@@ -39,7 +47,7 @@ class IntentRouter:
             }
 
         # 2. Confirmation to Retry / Execute
-        if text in ["yes", "yes.", "yes please", "yes, retry the payment", "yes, initiate retry", "retry", "retry now", "proceed with retry", "yes, retry"]:
+        if text in ["yes", "yes.", "yes please", "yes, retry the payment", "yes, initiate retry", "retry", "retry now", "proceed with retry", "yes, retry", "retry payment"]:
             return {
                 "intent": "confirm_retry",
                 "confidence": 0.98,
@@ -47,10 +55,19 @@ class IntentRouter:
                 "explanation": "Detected Intent: Customer confirmed recovery retry execution.",
             }
 
-        # 3. Checkout Recovery
+        # If it is an informational question, route to general query for deep reasoning
+        if is_informational_question:
+            return {
+                "intent": "general_query",
+                "confidence": 0.95,
+                "extracted_params": params,
+                "explanation": "Detected Intent: Informational query or knowledge question.",
+            }
+
+        # 3. Action: Checkout Recovery Workflow
         if any(term in text for term in [
-            "checkout", "abandoned", "cart", "otp timeout", "impulse", "pay link",
-            "payment link", "complete checkout", "buy now", "discount link"
+            "recover abandoned checkout", "checkout recovery", "recover checkout",
+            "impulse waiver", "send checkout link", "5% impulse"
         ]):
             return {
                 "intent": "checkout_recovery",
@@ -59,10 +76,10 @@ class IntentRouter:
                 "explanation": "Detected Intent: Checkout Abandonment Recovery with dynamic payment link & incentive.",
             }
 
-        # 4. Subscription Mandate Sequencer
+        # 4. Action: Subscription Mandate Sequencer
         if any(term in text for term in [
-            "subscription", "mandate", "recurring", "auto debit", "auto-debit",
-            "card expiry", "update card", "saas", "mandate retry"
+            "sequence mandate retry", "mandate retry with updated card token",
+            "execute mandate retry", "trigger mandate retry", "update mandate token"
         ]):
             return {
                 "intent": "mandate_sequencer",
@@ -71,10 +88,10 @@ class IntentRouter:
                 "explanation": "Detected Intent: Subscription Mandate Retry Sequencer & Token Update.",
             }
 
-        # 5. B2B Receivables & Promise to Pay
+        # 5. Action: B2B Receivables & Promise to Pay
         if any(term in text for term in [
-            "b2b", "invoice", "overdue", "receivable", "promise to pay", "hinglish",
-            "working capital", "vendor invoice", "installment", "pay later", "chaser"
+            "start hinglish b2b", "start hinglish b2b overdue voice chaser",
+            "trigger b2b voice chaser", "execute b2b recovery", "chase b2b invoice", "b2b voice chaser"
         ]):
             return {
                 "intent": "b2b_receivables_chaser",
@@ -83,10 +100,11 @@ class IntentRouter:
                 "explanation": "Detected Intent: B2B Overdue Receivables Chaser with Hinglish voice/AI option & Promise-to-Pay.",
             }
 
-        # 6. Payment Degradation Fix
+        # 6. Action: Payment Degradation Fix
         if any(term in text for term in [
-            "payment degradation", "degraded", "gateway", "auth timeout", "bank switch",
-            "3ds fail", "reroute", "retry gateway"
+            "diagnose payment degradation & reroute gateway switch",
+            "diagnose payment degradation", "reroute gateway switch", "fix payment degradation",
+            "trigger gateway failover", "reroute to fallback"
         ]):
             return {
                 "intent": "payment_degradation_fix",
@@ -95,9 +113,9 @@ class IntentRouter:
                 "explanation": "Detected Intent: Payment Degradation Root Cause Analysis & Gateway Rerouting.",
             }
 
-        # 7. Fee Reversal
+        # 7. Action: Fee Reversal
         if any(term in text for term in [
-            "fee reversal", "reverse fee", "annual fee", "waive fee", "refund fee"
+            "fee reversal", "reverse fee", "annual fee", "waive fee", "refund fee", "waive my annual fee"
         ]):
             return {
                 "intent": "fee_reversal",
@@ -108,7 +126,7 @@ class IntentRouter:
 
         return {
             "intent": "general_query",
-            "confidence": 0.70,
+            "confidence": 0.80,
             "extracted_params": {},
-            "explanation": "General recovery query or transaction status check.",
+            "explanation": "General query, account inquiry, or customer service question.",
         }
